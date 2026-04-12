@@ -4,12 +4,9 @@ require('dotenv').config()
 const express = require("express")
 const app = express();
 const mongoose = require("mongoose");
-// getting-started.js
-// const mongoose = require('mongoose');
 const listingRouter = require("./routes/listing.js")
 const reviewsRouter = require("./routes/review.js")
 const userRouter = require("./routes/user.js")
-// const mongoURL = "mongodb://127.0.0.1:27017/wanderlust";
 const dbUrl = process.env.ATLASDB_URL;
 const path = require("path");   
 const methodOverride = require("method-override");
@@ -31,7 +28,7 @@ app.use(express.static(path.join(__dirname, "public")));
 const store = MongoStore.create({
     mongoUrl : dbUrl,
     crypto : {
-        secret : "mysupersecretcode"
+        secret : process.env.SECRET,
     },
     touchAfter : 24 * 3600,
 });
@@ -40,7 +37,7 @@ store.on("error", (err)=>{
 })
 const sessionOptions = {
     store,
-    secret : "mysupersecretcode",
+    secret :  process.env.SECRET,
     resave : false,
     saveUninitialized : true,
     cookie: {
@@ -80,30 +77,15 @@ async function main() {
       console.log("DB ERROR:", err);
     }
   }
-// app.get("/", (req, res)=>{
-//     res.send("Hi, I am root");
-// })
 app.use("/listings",listingRouter);
 app.use("/listings/:id/reviews", reviewsRouter);
 app.use("/", userRouter);
-// app.get("/testListing", async (req, res)=>{
-//     let sampleListing = new Listing({
-//         title:"My New Villa",
-//         description : "By the beach",
-//         price : 1200,
-//         location : "calangute, Goa"
-//     });
-//     await sampleListing.save()
-//     console.log("sample was saved");
-//     res.send("listing save");
-// })
 app.use((req, res, next)=>{
     next(new ExpressError(404, "Page not found! "));
 })
 app.use((err, req, res, next)=>{
     let{statusCode = 500, message= "Something went wrong!"} = err;
     res.status(statusCode).render("listings/error.ejs", {message})
-    // res.status(statusCode).send(message);
 })
 app.listen(8080, ()=>{
     console.log("server is listening to port 8080");
