@@ -77,6 +77,9 @@ async function main() {
       console.log("DB ERROR:", err);
     }
   }
+app.get("/", (req, res) => {
+    res.redirect("/listings");
+});
 app.use("/listings",listingRouter);
 app.use("/listings/:id/reviews", reviewsRouter);
 app.use("/", userRouter);
@@ -87,6 +90,7 @@ app.use((err, req, res, next)=>{
     let{statusCode = 500, message= "Something went wrong!"} = err;
     res.status(statusCode).render("listings/error.ejs", {message})
 })
-app.listen(8080, ()=>{
-    console.log("server is listening to port 8080");
-})
+const port = process.env.PORT || 8080;
+app.listen(port, () => {
+    console.log(`server is listening to port ${port}`);
+});
